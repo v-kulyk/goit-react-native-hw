@@ -1,85 +1,138 @@
-import React, { useState } from "react";
+import React, { useReducer, useState } from "react";
 import {
   StyleSheet,
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   ImageBackground,
-  Image,
-  SafeAreaView,
+  TouchableWithoutFeedback,
   KeyboardAvoidingView,
+  Keyboard,
   Platform,
 } from "react-native";
+import LoginInput from "../components/LoginInput";
+import EmailInput from "../components/EmailInput";
+import PasswordInput from "../components/PasswordInput";
 
-export default function RegistrationScreen({ navigation }) {
-  const [login, setLogin] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+export default function RegistrationScreen({ updateRegistered }) {
+  const [form, setForm] = useReducer(
+    (state, action) => {
+      return { ...state, [action.type]: action.payload };
+    },
+    {
+      login: "",
+      email: "",
+      password: "",
+    }
+  );
+  const [errors, setErrors] = useState({
+    login: "",
+    email: "",
+    password: "",
+  });
+  const errorsMessages = {
+    login: "Введіть логін",
+    email: "Введіть адресу електронної пошти",
+    password: "Введіть пароль",
+  };
+  const validateForm = () => {
+    const currentErrors = {
+      login: "",
+      email: "",
+      password: "",
+    };
+
+    if (form.login === "") {
+      currentErrors.login = errorsMessages.login;
+    }
+
+    if (form.email === "") {
+      currentErrors.email = errorsMessages.email;
+    }
+
+    if (form.password === "") {
+      currentErrors.password = errorsMessages.password;
+    }
+
+    setErrors(currentErrors);
+
+    if (Object.values(currentErrors).every((error) => error === "")) {
+      return true;
+    }
+
+    return false;
+  };
+
+  const handleLoginChange = (value) => {
+    setForm({ type: "login", payload: value });
+  };
+
+  const handleEmailChange = (value) => {
+    setForm({ type: "email", payload: value });
+  };
+
+  const handlePasswordChange = (value) => {
+    setForm({ type: "password", payload: value });
+  };
+
+  const onLogin = async () => {
+    updateRegistered(true);
+  };
+
+  const onRegister = () => {
+    if (!validateForm()) {
+      return;
+    }
+    console.log("register");
+    console.log(form);
+  };
 
   return (
     <>
-      <ImageBackground
-        source={require("../../assets/mountain-bg.jpg")}
-        style={styles.backgroundImage}
-      >
-        <View style={styles.formContainer}>
-          <View style={styles.avatarContainer}>
-            <TouchableOpacity style={styles.addPhotoButton}>
-              <Text style={styles.addPhotoText}>+</Text>
-            </TouchableOpacity>
-          </View>
-
-          <Text style={styles.title}>Реєстрація</Text>
-
-          <TextInput
-            style={styles.input}
-            placeholder="Логін"
-            value={login}
-            onChangeText={setLogin}
-            autoCapitalize="none"
-            keyboardType="default"
-          />
-
-          <TextInput
-            style={styles.input}
-            placeholder="Адреса електронної пошти"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-
-          <View style={styles.passwordContainer}>
-            <TextInput
-              style={styles.passwordInput}
-              placeholder="Пароль"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={!showPassword}
-              keyboardType="default"
-            />
-            <TouchableOpacity
-              onPress={() => setShowPassword(!showPassword)}
-              style={styles.showPasswordButton}
-            >
-              <Text style={styles.showPasswordText}>Показати</Text>
-            </TouchableOpacity>
-          </View>
-
-          <TouchableOpacity style={styles.registerButton}>
-            <Text style={styles.registerButtonText}>Зареєструватися</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => navigation.navigate("Login")}
-            style={styles.loginLink}
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
+          <ImageBackground
+            style={styles.container}
+            source={require("../../assets/mountain-bg.jpg")}
           >
-            <Text style={styles.loginLinkText}>Вже є акаунт? Увійти</Text>
-          </TouchableOpacity>
-        </View>
-      </ImageBackground>
+            <View style={styles.formContainer}>
+              <Text style={styles.title}>Реєстрація</Text>
+
+              <LoginInput
+                value={form.login}
+                errorMessage={errors.login}
+                onChageText={handleLoginChange}
+              ></LoginInput>
+              <EmailInput
+                onChangeText={handleEmailChange}
+                errorMessage={errors.email}
+              ></EmailInput>
+              <PasswordInput
+                onChangeText={handlePasswordChange}
+                errorMessage={errors.password}
+              ></PasswordInput>
+              <TouchableOpacity
+                style={styles.registerButton}
+                onPress={() => onRegister()}
+              >
+                <Text style={styles.registerButtonText}>Зареєструватися</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => onLogin()}
+                style={styles.loginLink}
+              >
+                <Text style={styles.loginLinkText}>
+                  Вже зареєстровані? Увійти
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </ImageBackground>
+        </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
     </>
   );
 }
@@ -87,84 +140,24 @@ export default function RegistrationScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  backgroundImage: {
-    flex: 1,
-    resizeMode: "cover",
+    alignItems: "center",
+    justifyContent: "flex-end",
   },
   formContainer: {
-    flex: 1,
     backgroundColor: "white",
-    marginTop: 200,
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
-    padding: 16,
-    alignItems: "center",
-  },
-  avatarContainer: {
-    width: 120,
-    height: 120,
-    backgroundColor: "#F6F6F6",
-    borderRadius: 16,
-    marginTop: -60,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  addPhotoButton: {
-    position: "absolute",
-    right: -12,
-    bottom: 14,
-    width: 25,
-    height: 25,
-    backgroundColor: "white",
-    borderRadius: 12.5,
-    borderWidth: 1,
-    borderColor: "#FF6C00",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  addPhotoText: {
-    color: "#FF6C00",
-    fontSize: 20,
-    lineHeight: 22,
+    // height: 500,
+    width: "100%",
+    borderTopStartRadius: 25,
+    borderTopEndRadius: 25,
+    paddingHorizontal: 16,
+    paddingTop: 32,
+    paddingBottom: 32,
   },
   title: {
     fontSize: 30,
-    fontWeight: "500",
-    marginTop: 32,
     marginBottom: 32,
-  },
-  input: {
-    width: "100%",
-    height: 50,
-    backgroundColor: "#F6F6F6",
-    borderRadius: 8,
-    marginBottom: 16,
-    padding: 16,
-    fontSize: 16,
-  },
-  passwordContainer: {
-    width: "100%",
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F6F6F6",
-    borderRadius: 8,
-    marginBottom: 43,
-    paddingHorizontal: 16,
-    fontSize: 16,
-  },
-  passwordInput: {
-    flex: 1,
-    height: 50,
-    padding: 16,
-    fontSize: 16,
-  },
-  showPasswordButton: {
-    paddingRight: 16,
-  },
-  showPasswordText: {
-    color: "#1B4371",
-    fontSize: 16,
+    textAlign: "center",
+    fontWeight: "500",
   },
   registerButton: {
     width: "100%",
@@ -181,9 +174,15 @@ const styles = StyleSheet.create({
   },
   loginLink: {
     marginTop: 16,
+    textAlign: "center",
+  },
+  loginLink: {
+    marginTop: 16,
+    textAlign: "center",
   },
   loginLinkText: {
     color: "#1B4371",
     fontSize: 16,
+    textAlign: "center",
   },
 });

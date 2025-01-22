@@ -1,17 +1,12 @@
 import { StatusBar } from "expo-status-bar";
-import {
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import RegistrationScreen from "./src/screens/RegistrationScreen";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { useFonts } from "expo-font";
+import RegistrationScreen from "./src/screens/RegistrationScreen";
+import LoginScreen from "./src/screens/LoginScreen";
+import { useState } from "react";
 
 export default function App() {
+  const [registered, setRegistered] = useState(false);
   const [fontsLoaded] = useFonts({
     "Roboto-Regular": require("./assets/fonts/Roboto/static/Roboto-Regular.ttf"),
     "Roboto-Bold": require("./assets/fonts/Roboto/static/Roboto-Bold.ttf"),
@@ -27,23 +22,15 @@ export default function App() {
     );
   }
 
+  if (registered) {
+    return <LoginScreen updateRegistered={setRegistered}></LoginScreen>;
+  }
+
   return (
-    <>
-      <SafeAreaView style={styles.container}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={styles.container}
-        >
-          <RegistrationScreen></RegistrationScreen>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-      <StatusBar style="inverted" />
-    </>
+    <RegistrationScreen updateRegistered={setRegistered}></RegistrationScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: {},
 });
