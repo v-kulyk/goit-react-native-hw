@@ -14,7 +14,7 @@ import LoginInput from "../components/LoginInput";
 import EmailInput from "../components/EmailInput";
 import PasswordInput from "../components/PasswordInput";
 
-export default function RegistrationScreen({ updateRegistered }) {
+export default function RegistrationScreen({ navigation }) {
   const [form, setForm] = useReducer(
     (state, action) => {
       return { ...state, [action.type]: action.payload };
@@ -76,7 +76,7 @@ export default function RegistrationScreen({ updateRegistered }) {
   };
 
   const onLogin = async () => {
-    updateRegistered(true);
+    navigation.navigate('Login');
   };
 
   const onRegister = () => {
@@ -85,6 +85,7 @@ export default function RegistrationScreen({ updateRegistered }) {
     }
     console.log("register");
     console.log(form);
+    navigation.replace('Home');
   };
 
   return (
