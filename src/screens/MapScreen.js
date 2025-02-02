@@ -1,10 +1,32 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from "react";
+import { View, StyleSheet, Dimensions, Text } from "react-native";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 
-const MapScreen = () => {
+const MapScreen = ({ navigation, route }) => {
+  const { post } = route.params;
+
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Map Screen</Text>
+      <MapView
+        style={styles.mapStyle}
+        region={{
+          latitude: post.coordinates.latitude,
+          longitude: post.coordinates.longitude,
+          latitudeDelta: 0.0922,
+          longitudeDelta: 0.0421,
+        }}
+        mapType="standard"
+      >
+        <Marker
+          coordinate={{
+            latitude: post.coordinates.latitude,
+            longitude: post.coordinates.longitude,
+          }}
+          title={post.name}
+          description={post.location}
+          draggable
+        />
+      </MapView>
     </View>
   );
 };
@@ -12,11 +34,13 @@ const MapScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
   },
-  text: {
-    fontSize: 24,
+  mapStyle: {
+    width: Dimensions.get("window").width,
+    height: Dimensions.get("window").height,
   },
 });
 

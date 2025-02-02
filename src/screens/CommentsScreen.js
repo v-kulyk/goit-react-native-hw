@@ -1,10 +1,23 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet, Image, Text, FlatList } from "react-native";
+import CommentsItem from "../components/CommentsItem";
 
-const CommentsScreen = () => {
+const CommentsScreen = ({ navigation, route }) => {
+  const { post } = route.params;
+
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Comments Screen</Text>
+      <Image source={{ uri: post.image }} style={styles.postImage} />
+      <Text>Comments</Text>
+      {post.comments && (
+        <FlatList
+          data={post.comments}
+          renderItem={({ item }) => (
+            <CommentsItem navigation={navigation} comment={item} />
+          )}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.commentsList}
+        />
+      )}
     </View>
   );
 };
@@ -12,11 +25,18 @@ const CommentsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    gap: 32,
+    padding: 16,
+    backgroundColor: "#fff",
   },
-  text: {
-    fontSize: 24,
+  postImage: {
+    width: "100%",
+    height: 240,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  commentsList: {
+    gap: 16,
   },
 });
 

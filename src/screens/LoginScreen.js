@@ -12,8 +12,10 @@ import {
 import EmailInput from "../components/EmailInput";
 import PasswordInput from "../components/PasswordInput";
 import { useReducer, useState } from "react";
+import { useUser } from "../context/UserContext";
 
 const LoginScreen = ({ navigation }) => {
+  const { login } = useUser();
   const [form, setForm] = useReducer(
     (state, action) => {
       return { ...state, [action.type]: action.payload };
@@ -64,11 +66,14 @@ const LoginScreen = ({ navigation }) => {
       return;
     }
     console.log(form);
-    navigation.replace('Home');
+
+    login(form.email, form.password);
+
+    navigation.replace("Home");
   };
 
   const onSignUp = () => {
-    navigation.navigate('Registration')
+    navigation.navigate("Registration");
   };
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
