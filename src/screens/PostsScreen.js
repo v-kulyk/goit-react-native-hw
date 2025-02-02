@@ -1,22 +1,43 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { View, Text, Button, StyleSheet, Image, FlatList } from "react-native";
-import { usePosts } from "../context/PostsContext";
 import PostItem from "../components/PostItem";
-import { useUser } from "../context/UserContext";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchPosts } from "../utils/posts";
 
 const PostsScreen = ({ navigation }) => {
-  const { posts } = usePosts();
-  const { user } = useUser();
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.user.userInfo);
+  const posts = useSelector((state) => state.posts.posts);
+
+  useEffect(() => {
+    try {
+      fetchPosts(dispatch);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    }
+  }, []);
+
+  if (!user) {
+    return (
+      <View style={styles.container}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
       <View style={styles.userSection}>
         <Image
-          source={require("../../assets/profile-example.jpg")}
+          source={
+            user.photoUrl
+              ? { uri: user.photoUrl }
+              : require("../../assets/profile-example.jpg")
+          }
           style={styles.avatar}
         />
         <View style={styles.userInfo}>
-          <Text style={styles.userName}>{user.name}</Text>
+          <Text style={styles.userName}>{user.displayName}</Text>
           <Text style={styles.userEmail}>{user.email}</Text>
         </View>
       </View>

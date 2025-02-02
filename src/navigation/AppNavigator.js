@@ -13,6 +13,7 @@ import ProfileScreen from "../screens/ProfileScreen";
 import { useNavigation } from "@react-navigation/native";
 import CommentsScreen from "../screens/CommentsScreen";
 import MapScreen from "../screens/MapScreen";
+import { logoutDB } from "../utils/auth";
 
 const MainStack = createStackNavigator();
 const AuthStack = createStackNavigator();
@@ -48,6 +49,7 @@ const TabNavigator = () => {
             <TouchableOpacity
               style={{ marginRight: 16 }}
               onPress={() => {
+                logoutDB();
                 // Handle logout logic here
                 navigation.reset({
                   index: 0,

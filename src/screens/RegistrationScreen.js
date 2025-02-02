@@ -13,8 +13,11 @@ import {
 import LoginInput from "../components/LoginInput";
 import EmailInput from "../components/EmailInput";
 import PasswordInput from "../components/PasswordInput";
+import { loginDB, registerDB } from "../utils/auth";
+import { useDispatch } from "react-redux";
 
 export default function RegistrationScreen({ navigation }) {
+  const dispatch = useDispatch();
   const [form, setForm] = useReducer(
     (state, action) => {
       return { ...state, [action.type]: action.payload };
@@ -76,16 +79,24 @@ export default function RegistrationScreen({ navigation }) {
   };
 
   const onLogin = async () => {
-    navigation.navigate('Login');
+    navigation.navigate("Login");
   };
 
-  const onRegister = () => {
+  const onRegister = async () => {
     if (!validateForm()) {
       return;
     }
-    console.log("register");
-    console.log(form);
-    navigation.replace('Home');
+    try {
+      await registerDB({
+        name: form.login,
+        email: form.email,
+        password: form.password,
+      });
+      await loginDB({ email: form.email, password: form.password }, dispatch);
+      navigation.replace("Home");
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (

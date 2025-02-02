@@ -13,8 +13,11 @@ import EmailInput from "../components/EmailInput";
 import PasswordInput from "../components/PasswordInput";
 import { useReducer, useState } from "react";
 import { useUser } from "../context/UserContext";
+import { loginDB } from "../utils/auth";
+import { useDispatch } from "react-redux";
 
 const LoginScreen = ({ navigation }) => {
+  const dispatch = useDispatch();
   const { login } = useUser();
   const [form, setForm] = useReducer(
     (state, action) => {
@@ -67,9 +70,12 @@ const LoginScreen = ({ navigation }) => {
     }
     console.log(form);
 
-    login(form.email, form.password);
-
-    navigation.replace("Home");
+    try {
+      await loginDB({ email: form.email, password: form.password }, dispatch);
+      navigation.replace("Home");
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const onSignUp = () => {

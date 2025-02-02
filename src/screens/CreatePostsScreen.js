@@ -11,8 +11,11 @@ import { Camera, CameraView, useCameraPermissions } from "expo-camera";
 import * as MediaLibrary from "expo-media-library";
 import * as Location from "expo-location";
 import { Ionicons } from "@expo/vector-icons";
-import { usePosts } from "../context/PostsContext";
-import { useUser } from "../context/UserContext";
+// import { usePosts } from "../context/PostsContext";
+// import { useUser } from "../context/UserContext";
+import { useDispatch, useSelector } from "react-redux";
+import { addPost } from "../utils/firestore";
+import { createPost } from "../utils/posts";
 
 const CreatePostsScreen = ({ navigation }) => {
   const [hasPermission, setHasPermission] = useState(null);
@@ -21,8 +24,8 @@ const CreatePostsScreen = ({ navigation }) => {
   const [photo, setPhoto] = useState(null);
   const [photoName, setPhotoName] = useState("");
   const [location, setLocation] = useState("");
-  const { createPost } = usePosts();
-  const { user } = useUser();
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.user.userInfo);
 
   useEffect(() => {
     (async () => {
@@ -50,7 +53,6 @@ const CreatePostsScreen = ({ navigation }) => {
         const photo = await cameraRef.takePictureAsync();
         setPhoto(photo.uri);
 
-        // Save to media library
         await MediaLibrary.saveToLibraryAsync(photo.uri);
       } catch (error) {
         console.log("Error taking photo:", error);
@@ -74,21 +76,65 @@ const CreatePostsScreen = ({ navigation }) => {
   };
 
   const handlePublish = async () => {
-    const coordinates = await getCurrentLocation();
+    try {
+      // Log the post data before creation
+      console.log("Attempting to create post with data:", {
+        imageUri: photo,
+        imageName: photoName,
+        location: location,
+        userId: user?.uid,
+        timestamp: new Date().toISOString(),
+      });
 
-    // Create post object with all data
-    const post = {
-      image: photo,
-      name: photoName,
-      location: location,
-      coordinates: coordinates,
-      timestamp: new Date().toISOString(),
-      userId: user.id,
-    };
+      const coordinates = await getCurrentLocation();
 
-    createPost(post);
+      // Validate the photo URI
+      if (!photo || !photo.startsWith("file://")) {
+        throw new Error(`Invalid photo URI: ${photo}`);
+      }
 
-    navigation.navigate("Posts");
+      // Validate user data
+      if (!user?.uid) {
+        throw new Error("User ID is not available");
+      }
+
+      // Create post object with all data
+      const post = {
+        image: photo,
+        name: photoName,
+        location: location,
+        coordinates: coordinates,
+        timestamp: new Date().toISOString(),
+        userId: user.uid,
+      };
+
+      // Log the final post object
+      console.log("Final post object:", post);
+
+      // Attempt to create the post
+      const result = await createPost(post, dispatch);
+      console.log("Post creation result:", result);
+
+      navigation.navigate("Posts");
+    } catch (error) {
+      // Enhanced error logging
+      console.error("Detailed error in handlePublish:", {
+        message: error.message,
+        code: error.code,
+        stack: error.stack,
+        name: error.name,
+        // Firebase specific error details
+        serverResponse: error.serverResponse,
+        customData: error.customData,
+      });
+
+      // You might want to show this to the user
+      Alert.alert(
+        "Error Creating Post",
+        `Failed to create post: ${error.message}`,
+        [{ text: "OK" }]
+      );
+    }
   };
 
   if (hasPermission === null) {
